@@ -1,0 +1,38 @@
+$sm: 600px;
+$md: 905px;
+$lg: 1240px;
+
+$spacing-sm: 8px;
+$spacing-md: 16px;
+$spacing-lg: 32px;
+$spacing-xl: 48px;
+$spacing-xxl: 64px;
+
+$fulutu-black: #050505;
+$fulutu-grey: #232323;
+$fulutu-white: #eeeeee;
+
+$fulutu-gold: #d59434;
+$fulutu-rose-grey: #998f92;
+$fulutu-rose: hsl(333, 25%, 79%);
+$fulutu-blue: hsl(208, 60%, 67%);
+$fulutu-blue-grey: hsl(208, 60%, 67%);
+
+$font-sm: 1rem;
+$font-md: 1.5rem;
+$font-lg: 2rem;
+$font-xl: 4rem;
+
+$transition-all-ease: all 0.3s ease;
+$transition-all-ease-fast: all 0.166s ease;
+$transition-all-slow-ease: all 1s ease;
+$transition-all-cubic: all 0.4s cubic-bezier(0.9, 0.7, 0.66, 0.88);
+
+@media (min-width: $sm) {
+}
+
+@media (min-width: $md) {
+}
+
+@media (min-width: $lg) {
+}
