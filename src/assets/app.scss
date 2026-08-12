@@ -1,0 +1,19 @@
+.animate__animated {
+  transition: all 1.3s ease-in-out;
+}
+
+.animate__fadeIn {
+  opacity: 1;
+}
+
+.animate__fadeIn.animate__fadeInActive {
+  opacity: 1;
+}
+
+.animate__fadeOut {
+  opacity: 0;
+}
+
+.animate__fadeOut.animate__fadeOutActive {
+  opacity: 0;
+}

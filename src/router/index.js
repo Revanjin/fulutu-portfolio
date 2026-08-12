@@ -6,46 +6,18 @@ const routes = [
     path: '/',
     name: 'home',
     component: BasePage,
+    meta: {
+      enterClass: 'animate__animated animate__fadeIn',
+      leaveClass: 'animate__animated animate__fadeOut',
+    },
   },
   {
-    path: '/about',
-    name: 'about',
+    path: '/:catchAll(.*)',
     component: BasePage,
-  },
-  {
-    path: '/about/:name',
-    name: 'about-detail',
-    component: BasePage,
-  },
-  {
-    path: '/projects',
-    name: 'Projects',
-    component: BasePage,
-  },
-  {
-    path: '/projects/:category',
-    name: 'ProjectDetail',
-    component: BasePage,
-  },
-  {
-    path: '/about-me',
-    name: 'AboutMe',
-    component: BasePage,
-  },
-  {
-    path: '/commissions',
-    name: 'Commissions',
-    component: BasePage,
-  },
-  {
-    path: '/contact',
-    name: 'Contact',
-    component: BasePage,
-  },
-  {
-    path: '/imprint',
-    name: 'Imprint',
-    component: BasePage,
+    meta: {
+      enterClass: 'animate__animated animate__fadeIn',
+      leaveClass: 'animate__animated animate__fadeOut',
+    },
   },
 ];
 

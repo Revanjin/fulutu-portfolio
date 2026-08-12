@@ -1,212 +1,113 @@
 <template>
-  <nav class="nav-container">
-    <a href="/" class="nav-logo"> FULUTU </a>
+  <nav v-if="displayNavigation" class="nav">
+    <router-link to="/" class="nav-logo">FULUTU</router-link>
 
-    <div v-if="windowWidth >= 905" class="nav-container">
-      <div class="nav-item" v-for="(route, index) in sortRoutes()" :key="index">
-        <router-link :to="route.url" :key="index">
-          {{ sanitizeRouterLabel(route.slug) }}
-        </router-link>
-
-        <div class="nav-sub-item" v-if="route.subPaths.length > 0">
-          <router-link
-            v-for="(subNavItem, index) in route.subPaths"
-            :to="subNavItem.url"
-            :key="index"
-          >
-            {{ subNavItem.title }}
-          </router-link>
+    <div v-if="isDesktopView" class="nav-container">
+      <template v-for="route in sortedRoutes" :key="route.title">
+        <div class="nav-item">
+          <router-link :to="route.url">{{ route.title }}</router-link>
+          <div v-if="route.subPaths.length" class="nav-sub-item">
+            <router-link
+              v-for="subNavItem in route.subPaths"
+              :to="subNavItem.url"
+              :key="subNavItem.title"
+            >
+              {{ subNavItem.title }}
+            </router-link>
+          </div>
         </div>
-      </div>
-      <div class="nav-item nav-lang-switch">
-        <div
-          :class="[
-            'nav-lang-switch-item',
-            {
-              'nav-lang-switch-item--active': getLanguage === 'de',
-            },
-          ]"
-          @click="switchLanguage('de')"
-        >
-          DE
-        </div>
-        <div
-          :class="[
-            'nav-lang-switch-item',
-            {
-              'nav-lang-switch-item--active': getLanguage === 'en-US',
-            },
-          ]"
-          @click="switchLanguage('en-US')"
-        >
-          EN
-        </div>
-      </div>
+      </template>
+      <LanguageSwitcher
+        :currentLanguage="getLanguage"
+        @switch="switchLanguage"
+      />
     </div>
 
-    <header v-if="windowWidth < 905" class="nav-mobile">
-      <div
-        id="nav-mobile-icon"
-        class="nav-mobile-icon"
-        v-on:click="toggleBurgerMenu"
-      >
-        <span></span>
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
-      <div id="nav-mobile-bar" class="nav-mobile-bar">
-        <div class="nav-mobile-list">
-          <div
-            class="nav-mobile-link"
-            v-for="(navItem, index) in sortRoutes()"
-            :key="index"
-          >
-            <router-link :to="navItem.url" v-on:click="toggleBurgerMenu">
-              {{ navItem.title }}
-            </router-link>
-
-            <div class="nav-mobile-multi" v-if="navItem.subPaths.length > 0">
-              <router-link
-                v-for="(subNavItem, index) in navItem.subPaths"
-                :to="subNavItem.url"
-                v-on:click="toggleBurgerMenu"
-                :key="index"
-              >
-                {{ subNavItem.title }}
-              </router-link>
-            </div>
-          </div>
-          <div class="nav-item nav-lang-switch">
-            <div
-              :class="[
-                'nav-lang-switch-item',
-                {
-                  'nav-lang-switch-item--active': getLanguage === 'de',
-                },
-              ]"
-              @click="switchLanguage('de')"
-            >
-              DE
-            </div>
-            <div
-              :class="[
-                'nav-lang-switch-item',
-                {
-                  'nav-lang-switch-item--active': getLanguage === 'en-US',
-                },
-              ]"
-              @click="switchLanguage('en-US')"
-            >
-              EN
-            </div>
-          </div>
-        </div>
-      </div>
-    </header>
-
-    <div id="progression-bar" class="progression-bar"></div>
+    <MobileNavigation
+      v-if="mobileNavVersion === 'v1'"
+      :sortedRoutes="sortedRoutes"
+      :currentLanguage="getLanguage"
+      @switch-language="switchLanguage"
+    />
+    <MobileNavigationV2
+      v-else
+      :sortedRoutes="sortedRoutes"
+      :currentLanguage="getLanguage"
+      @switch-language="switchLanguage"
+    />
   </nav>
 </template>
 
 <script>
+import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
+import MobileNavigation from '@/components/MobileNavigation.vue';
+import MobileNavigationV2 from '@/components/MobileNavigationV2.vue';
 import { mapGetters, mapMutations } from 'vuex';
 
 export default {
   name: 'vcp-router',
+  components: { LanguageSwitcher, MobileNavigation, MobileNavigationV2 },
   data() {
     return {
       validFooterNavigation: ['/impressum', '/contact', '/imprint'],
       windowWidth: 0,
-      windowHeight: 0,
+      displayNavigation: true,
     };
   },
   mounted() {
     this.$nextTick(function () {
       window.addEventListener('resize', this.getWindowWidth);
-      window.addEventListener('resize', this.getWindowHeight);
-
-      //Init
       this.getWindowWidth();
-      this.getWindowHeight();
     });
-
-    console.log(this.getLanguage);
-    this.setScrollbar();
-    window.addEventListener('resize', this.setScrollbar());
+  },
+  beforeUnmount() {
+    window.removeEventListener('resize', this.getWindowWidth);
   },
   computed: {
-    ...mapGetters(['getRoutesEN', 'getRoutesDE', 'getLanguage']),
+    ...mapGetters([
+      'getRoutesEN',
+      'getRoutesDE',
+      'getLanguage',
+      'getMobileNavVersion',
+    ]),
+    isDesktopView() {
+      return this.windowWidth >= 905;
+    },
+    sortedRoutes() {
+      return this.sortRoutes();
+    },
+    mobileNavVersion() {
+      return this.getMobileNavVersion;
+    },
   },
   methods: {
-    ...mapMutations(['setLanguage']),
+    ...mapMutations(['setLanguage', 'setMobileNavVersion']),
 
     getWindowWidth() {
       this.windowWidth = document.documentElement.clientWidth;
     },
 
-    getWindowHeight() {
-      this.windowHeight = document.documentElement.clientHeight;
-    },
-
     sortRoutes() {
-      let routes =
-        this.getLanguage == 'de' ? this.getRoutesDE : this.getRoutesEN;
-
-      routes = routes.filter(
-        (t) => !this.validFooterNavigation.includes(t.url)
+      const routes =
+        this.getLanguage === 'de' ? this.getRoutesDE : this.getRoutesEN;
+      const filteredRoutes = routes.filter(
+        (t) => !this.validFooterNavigation.includes(t.url) && !t.hide,
       );
 
-      var sortedList = routes.sort(function (a, b) {
-        return a.position - b.position || a.name?.localeCompare(b.name);
+      return filteredRoutes.sort((a, b) => {
+        if (a.position === b.position) {
+          return a.name?.localeCompare(b.name);
+        }
+        return a.position - b.position;
       });
-
-      return sortedList;
     },
 
     sanitizeRouterLabel(route) {
-      if (route === '/' || route === undefined || route == '') route = 'Home';
-
-      route = route.replace('-', ' ');
-
-      route = route[0].toUpperCase() + route.substring(1);
-
+      if (!route || route === '/') route = 'Home';
+      route = route.replace('-', ' ').charAt(0).toUpperCase() + route.slice(1);
       return route;
     },
 
-    setScrollbar() {
-      const progressionBar = document.getElementById('progression-bar');
-      const body = document.body;
-      const html = document.documentElement;
-
-      var height = Math.max(
-        body.scrollHeight,
-        body.offsetHeight,
-        html.clientHeight,
-        html.scrollHeight,
-        html.offsetHeight
-      );
-      this.setScrollEvent(progressionBar, height);
-    },
-
-    setScrollEvent(progressionBar, height) {
-      document.addEventListener('scroll', () => {
-        var currentPosition = window.pageYOffset;
-        var scrollableHeight = height - document.body.clientHeight;
-
-        if (scrollableHeight !== 0) {
-          progressionBar.style.width = `${
-            (currentPosition / scrollableHeight) * 100
-          }%`;
-        }
-      });
-    },
-    toggleBurgerMenu() {
-      var navBar = document.getElementById('nav-mobile-bar');
-      var navIcon = document.getElementById('nav-mobile-icon');
-      navBar.classList.toggle('nav-mobile-bar--open');
-      navIcon.classList.toggle('nav-mobile-icon--open');
-    },
     switchLanguage(lang) {
       this.setLanguage(lang);
     },
@@ -218,23 +119,29 @@ export default {
 @import '../assets/main.scss';
 
 nav {
+  background: $fulutu-white;
+  box-shadow: 0px 0px 6px -3px #050505;
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   top: 0;
   left: 0;
   padding: 0 32px;
+  position: fixed;
+  height: 94px;
+  width: calc(100% - 64px);
   z-index: 20;
 }
 
 .nav {
   &-container {
-    display: flex;
+    display: none;
     justify-content: flex-end;
     align-items: center;
-    height: 94px;
-    position: fixed;
-    background: $fulutu-white;
-    width: calc(100% - 64px);
+    width: calc(100% - 32px);
+
+    @media (min-width: $md) {
+      display: flex;
+    }
   }
 
   &-item {
@@ -247,10 +154,6 @@ nav {
       color: $fulutu-black;
       text-decoration: none;
       transition: $transition-all-ease-fast;
-    }
-
-    &:last-child {
-      padding-right: 16px;
     }
 
     &:hover {
@@ -273,26 +176,6 @@ nav {
     }
   }
 
-  &-lang-switch {
-    display: flex;
-
-    > div {
-      cursor: pointer;
-      padding: 8px;
-      position: relative;
-
-      &:not(:last-child):after {
-        content: '|';
-        position: absolute;
-        right: -2px;
-      }
-    }
-
-    &-item--active {
-      color: $fulutu-blue;
-    }
-  }
-
   &-logo {
     color: $fulutu-black;
     font-family: 'Six Caps';
@@ -306,139 +189,6 @@ nav {
 
     &:hover {
       color: $fulutu-rose;
-    }
-  }
-
-  &-mobile {
-    display: flex;
-
-    @media (min-width: $md) {
-      display: none;
-    }
-
-    &-icon {
-      cursor: pointer;
-      height: 40px;
-      margin: 20px;
-      -webkit-transform: rotate(0deg);
-      transform: rotate(0deg);
-      transition: 0.2s ease-in-out;
-      width: 60px;
-      z-index: 21;
-
-      span {
-        background: $fulutu-grey;
-        border-radius: 7px;
-        display: block;
-        left: 0;
-        height: 4px;
-        width: 100%;
-        opacity: 1;
-        position: fixed;
-        transform: rotate(0deg);
-        transition: 0.33s ease;
-
-        &:first-child {
-          top: 0;
-        }
-        &:nth-child(2),
-        &:nth-child(3) {
-          top: 18px;
-        }
-        &:last-child {
-          top: 36px;
-        }
-      }
-
-      &--open {
-        position: fixed;
-        top: 8px;
-        right: 32px;
-
-        span {
-          background: $fulutu-white;
-          &:first-child {
-            top: 18px;
-            transform: rotate(45deg);
-            opacity: 0;
-          }
-          &:nth-child(2) {
-            transform: rotate(-45deg);
-          }
-          &:nth-child(3) {
-            transform: rotate(45deg);
-          }
-          &:last-child {
-            top: 18px;
-            transform: rotate(-45deg);
-            opacity: 0;
-          }
-        }
-      }
-    }
-
-    &-bar {
-      align-items: center;
-      background: rgba(17, 17, 17, 0.9);
-      height: 100%;
-      justify-content: center;
-      left: 0;
-      margin: 0;
-      padding: 0;
-      position: fixed;
-      top: 0;
-      transition: $transition-all-ease-fast;
-      transform: translateX(-100%);
-      width: 100%;
-      z-index: 20;
-
-      &--open {
-        transform: translateX(0);
-      }
-    }
-    &-list {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 80%;
-      padding: 0;
-    }
-    &-item {
-      font-size: 30px;
-      transition: all 0.33s ease;
-    }
-
-    &-link {
-      font-size: $font-md;
-
-      &:not(:last-child) {
-        margin-bottom: $spacing-lg;
-      }
-
-      a {
-        color: $fulutu-white;
-      }
-    }
-
-    &-multi {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-
-      a {
-        margin-bottom: $spacing-md;
-
-        &:first-child {
-          margin-top: $spacing-md;
-        }
-      }
-
-      &-icon {
-        filter: invert(1);
-        width: 16px;
-        transform: scaleY(-1) rotate(90deg);
-      }
     }
   }
 
@@ -505,6 +255,7 @@ nav {
   position: absolute;
   height: 4px;
   background: $fulutu-blue;
+  left: 0;
   top: 94px;
   z-index: 1;
 }

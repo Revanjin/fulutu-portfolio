@@ -1,23 +1,23 @@
 <template>
   <Navigation />
-  <router-view :key="$route.path" />
-  <BubbleButton />
+  <ProgressBar />
+  <router-view class="page" :key="$route.fullPath" />
   <Footer />
 </template>
 
 <script>
-import { mapMutations } from 'vuex';
-import BubbleButton from './components/BubbleButton.vue';
+import { mapGetters, mapMutations } from 'vuex';
 import Footer from './components/Footer.vue';
 import Navigation from './views/Navigation';
-const contentful = require('contentful');
+import ProgressBar from './components/ProgressBar.vue';
+import { createClient } from 'contentful';
 
 export default {
   name: 'vcp-app',
   components: {
     Navigation,
-    BubbleButton,
     Footer,
+    ProgressBar,
   },
   data() {
     return {
@@ -27,25 +27,49 @@ export default {
   async created() {
     this.pages = await this.setupContentfulPages();
   },
+  computed: {
+    ...mapGetters(['getCustomCss']),
+  },
   methods: {
     ...mapMutations([
       'setPagesEN',
       'setRoutesEN',
       'setPagesDE',
       'setRoutesDE',
+      'setCustomCss',
       'setSocialMedia',
     ]),
 
-    setupContentfulPages() {
-      var client = contentful.createClient({
-        space: process.env.VUE_APP_CONTENTFUL_SPACE_ID,
-        accessToken: process.env.VUE_APP_CONTENTFUL_ACCESS_TOKEN,
+    async setupContentfulPages() {
+      var client = createClient({
+        space: import.meta.env.VITE_CONTENTFUL_SPACE_ID,
+        accessToken: import.meta.env.VITE_CONTENTFUL_ACCESS_TOKEN,
       });
 
-      client
+      await client
         .getEntries({ content_type: 'globalSocialMedia' })
         .then((response) => {
           this.setSocialMedia(response.items);
+        });
+
+      await client
+        .getEntries({ content_type: 'customCss' })
+        .then((response) => {
+          const fields = response.items?.[0]?.fields;
+          this.setCustomCss(fields?.css);
+          const style = document.createElement('style');
+          style.id = 'custom-css';
+          style.textContent = fields?.css;
+          document.head.appendChild(style);
+
+          fields?.fontFiles?.forEach((font) => {
+            const fontFace = `@font-face {
+                font-family: '${font.fields.title}';
+                src: url('${font.fields.file.url}') format('truetype');
+            }`;
+
+            style.appendChild(document.createTextNode(fontFace));
+          });
         });
 
       client
@@ -73,7 +97,7 @@ export default {
 
           //step 1: eine liste mit den subPaths
           var subPathList = [];
-          allRoutes.forEach((item) => {
+          allRoutes?.forEach((item) => {
             var splittedSubItem = item.url.split('/');
 
             // e.g. ["","path","subpath"]
@@ -87,11 +111,11 @@ export default {
 
           //step 3: suche in "before" nach den ersten part vom path und wenn er da ist,
           //dann in subPaths hinzufügen
-          subPathList.forEach((subPathItem) => {
+          subPathList?.forEach((subPathItem) => {
             var splittedSubItem = subPathItem.url.split('/');
             splittedSubItem = '/' + splittedSubItem[1];
 
-            cleanList.forEach((cleanItem) => {
+            cleanList?.forEach((cleanItem) => {
               if (cleanItem.url == splittedSubItem) {
                 cleanItem.subPaths.push({
                   url: subPathItem.url,
@@ -130,7 +154,7 @@ export default {
 
           //step 1: eine liste mit den subPaths
           var subPathList = [];
-          allRoutes.forEach((item) => {
+          allRoutes?.forEach((item) => {
             var splittedSubItem = item.url.split('/');
 
             // e.g. ["","path","subpath"]
@@ -144,11 +168,11 @@ export default {
 
           //step 3: suche in "before" nach den ersten part vom path und wenn er da ist,
           //dann in subPaths hinzufügen
-          subPathList.forEach((subPathItem) => {
+          subPathList?.forEach((subPathItem) => {
             var splittedSubItem = subPathItem.url.split('/');
             splittedSubItem = '/' + splittedSubItem[1];
 
-            cleanList.forEach((cleanItem) => {
+            cleanList?.forEach((cleanItem) => {
               if (cleanItem.url == splittedSubItem) {
                 cleanItem.subPaths.push({
                   url: subPathItem.url,
@@ -174,6 +198,7 @@ export default {
 
 <style lang="scss">
 @import '@/assets/main.scss';
+@import 'animate.css';
 
 html,
 body {
@@ -188,9 +213,10 @@ a {
 }
 
 #app {
-  font-family: 'Comfortaa';
+  font-family: 'Montserrat', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: $fulutu-white;
   color: $fulutu-black;
 }
 
@@ -207,5 +233,10 @@ a {
   border: 4px solid transparent;
   background-clip: content-box;
   background-color: $fulutu-blue-grey;
+}
+
+::selection {
+  background-color: $fulutu-blue;
+  color: #000;
 }
 </style>

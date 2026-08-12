@@ -1,6 +1,6 @@
-$sm: 600px;
-$md: 905px;
-$lg: 1240px;
+$sm: 640px;
+$md: 768px;
+$lg: 1024px;
 
 $spacing-sm: 8px;
 $spacing-md: 16px;
@@ -35,4 +35,158 @@ $transition-all-cubic: all 0.4s cubic-bezier(0.9, 0.7, 0.66, 0.88);
 }
 
 @media (min-width: $lg) {
+}
+
+@keyframes zoomIn {
+  0% {
+    transform: scale(0);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes zoomOut {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(0);
+  }
+}
+
+@keyframes appear {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    background: rgba(0, 0, 0, 0);
+  }
+  100% {
+    background: rgba(0, 0, 0, 0.7);
+  }
+}
+
+@keyframes fadeOut {
+  0% {
+    background: rgba(0, 0, 0, 0.7);
+  }
+  100% {
+    background: rgba(0, 0, 0, 0);
+  }
+}
+
+@keyframes scaleUp {
+  0% {
+    transform: scale(0.8) translateY(1000px);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1) translateY(0px);
+    opacity: 1;
+  }
+}
+
+@keyframes scaleDown {
+  0% {
+    transform: scale(1) translateY(0px);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.8) translateY(1000px);
+    opacity: 0;
+  }
+}
+
+@keyframes scaleBack {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(0.85);
+  }
+}
+
+@keyframes scaleForward {
+  0% {
+    transform: scale(0.85);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes modalContentFadeIn {
+  0% {
+    top: 52%;
+  }
+  100% {
+    top: 50%;
+  }
+}
+
+@keyframes modalContentFadeOut {
+  0% {
+    opacity: 1;
+    top: 50%;
+  }
+  100% {
+    opacity: 0;
+    top: 54%;
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+// Reusable loading skeleton with shimmer effect.
+// Include it on a positioned container and toggle a `<base>--loading`
+// modifier class on the same element while the image is loading.
+@mixin skeleton-shimmer {
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    pointer-events: none;
+    opacity: 0;
+    border-radius: inherit;
+    background-color: #e9e9e9;
+    background-image: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 25%,
+      rgba(255, 255, 255, 0.65) 37%,
+      rgba(255, 255, 255, 0) 63%
+    );
+    background-size: 400% 100%;
+    transition: opacity 0.5s ease;
+  }
+
+  &--loading::before {
+    opacity: 1;
+    animation: shimmer 1.4s ease-in-out infinite;
+  }
 }

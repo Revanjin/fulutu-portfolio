@@ -1,4 +1,2 @@
-const { defineConfig } = require("@vue/cli-service");
-module.exports = defineConfig({
-  transpileDependencies: true,
-});
+// This file is no longer used – the project has been migrated to Vite.
+// Configuration now lives in vite.config.js.

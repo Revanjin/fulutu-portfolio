@@ -1,7 +1,13 @@
 <template>
-  <div class="ti">
-    <div class="ti-image">
-      <img :src="content.media.fields?.file?.url" @click="openModal" />
+  <div class="ti" :class="{ 'ti--right': content.imageRight }">
+    <div class="ti-image" :class="{ 'ti-image--loading': !imgLoaded }">
+      <img
+        @contextmenu.prevent
+        :src="activeMedia?.fields?.file?.url"
+        @click="openModal"
+        @load="imgLoaded = true"
+        @error="imgLoaded = true"
+      />
     </div>
     <div class="ti-content">
       <RichTextRenderer :document="content.content" />
@@ -20,6 +26,21 @@ export default {
   props: {
     content: [Array, Object],
   },
+  data() {
+    return {
+      imgLoaded: false,
+    };
+  },
+  computed: {
+    isMobile() {
+      return window.innerWidth < 576;
+    },
+    activeMedia() {
+      return this.isMobile && this.content.mediaMobile
+        ? this.content.mediaMobile
+        : this.content.media;
+    },
+  },
 };
 </script>
 
@@ -34,11 +55,17 @@ export default {
 
   @media (min-width: $sm) {
     flex-direction: row;
+
+    &--right {
+      flex-direction: row-reverse;
+    }
   }
 
   .ti-image {
+    animation: appear 0.25s ease-in;
     flex: 0 0 236px;
     position: relative;
+    @include skeleton-shimmer;
 
     &:after {
       content: '';
@@ -75,6 +102,7 @@ export default {
   }
 
   .ti-content {
+    flex: 1;
   }
 }
 </style>

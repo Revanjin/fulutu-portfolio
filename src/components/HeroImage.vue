@@ -1,62 +1,96 @@
 <template>
-  <div class="hero-image-container" :style="`height: ${setContainerHeight}`">
-    <div class="hero-image-content">
-      {{ content.headline }}
-    </div>
-    <div
-      class="hero-slider"
-      v-for="(heroItem, index) in currentContent"
-      :key="index"
-    >
-      <div :class="['hero-image', { shifted: shifted }]">
-        <img :src="heroItem.fields?.file?.url" @load="mediaIsLoaded" />
+  <div
+    :class="[
+      'hero-image-container',
+      { 'hero-image-container--video': mediaIsVideo },
+    ]"
+    :style="{ height: setContainerHeight }"
+  >
+    <div ref="headline" class="hero-image-content"></div>
+    <template v-if="currentContent.length > 1">
+      <div
+        v-for="(heroItem, index) in currentContent"
+        :key="index"
+        class="hero-slider"
+      >
+        <div :class="['hero-image', { shifted: shifted }]">
+          <img
+            @contextmenu.prevent
+            :src="heroItem.fields?.file?.url"
+            @load="mediaIsLoaded"
+          />
+        </div>
       </div>
-    </div>
+    </template>
+    <template v-else>
+      <div v-if="mediaIsVideo">
+        <video
+          @contextmenu.prevent
+          :style="`width:${responsiveWidth}px`"
+          class="hero-video"
+          :src="currentContent[0]?.fields?.file?.url"
+          :type="mediaContentType"
+          autoplay
+          loop
+          muted
+          @load="mediaIsLoaded"
+        ></video>
+      </div>
+      <div v-else :class="['hero-image', { shifted: shifted }]">
+        <img
+          @contextmenu.prevent
+          :src="currentContent[0]?.fields?.file?.url"
+          @load="mediaIsLoaded"
+        />
+      </div>
+    </template>
   </div>
 </template>
 
 <script>
-import { ref } from 'vue';
+import { gsap } from 'gsap';
 
 export default {
   name: 'HeroImage',
   props: {
-    content: [Array, Object],
-    shifted: Boolean,
+    content: {
+      type: [Array, Object],
+      required: true,
+    },
+    shifted: {
+      type: Boolean,
+      default: false,
+    },
   },
   data() {
     return {
       currentIndex: 0,
       isLoaded: false,
+      handleIntervalSlider: null,
+      backgroundSetInitially: false,
+      clientWidth: document.body.clientWidth,
     };
   },
-  mounted() {
-    var sliderItems = document.getElementsByClassName('hero-slider');
-    if (sliderItems) {
-      var sliderArray = Array.from(sliderItems);
-
-      if (sliderArray.length > 1) {
-        this.intiallySetBackground(sliderArray);
-        this.handleIntervalSlider = setInterval(this.autoSlide, 6000);
-      }
-    }
-  },
   computed: {
+    mediaContentType() {
+      return this.currentContent[0]?.fields?.file?.contentType;
+    },
+    mediaIsVideo() {
+      return this.mediaContentType?.includes('video');
+    },
     currentContent() {
       return this.isMobile ? this.content.mediaMobile : this.content.media;
     },
     isMobile() {
-      const windowWidth = ref(window.innerWidth);
-
-      if (windowWidth.value < 576 && !!this.content.mediaMobile) return true;
-      return false;
+      return window.innerWidth < 576 && !!this.content.mediaMobile;
     },
     setContainerHeight() {
-      const body = document.body;
-      const height = body.offsetHeight;
-      const heightWithoutHeader = height - 98 + 'px';
+      return `${document.body.offsetHeight - 66}px`;
+    },
+    responsiveWidth() {
+      if (this.clientWidth < 1920) return 1920;
 
-      return heightWithoutHeader;
+      return this.clientWidth;
     },
   },
   methods: {
@@ -64,36 +98,56 @@ export default {
       this.isLoaded = true;
     },
     autoSlide() {
-      var sliderItems = document.getElementsByClassName('hero-slider');
-      var sliderArray = Array.from(sliderItems);
-      console.log(sliderArray);
+      const sliderCount = this.currentContent.length;
 
-      if (sliderArray.length > 0) {
-        // reset if last item is reached
-        if (this.currentIndex >= sliderArray.length) {
-          sliderArray[this.currentIndex - 1].style.opacity = 0;
-          this.currentIndex = 0;
-        }
-
-        if (this.currentIndex == 0 && !this.backgroundSetInitially) {
-          sliderArray[this.currentIndex].style.opacity = 1;
-        } else {
-          sliderArray[this.currentIndex - 1]
-            ? (sliderArray[this.currentIndex - 1].style.opacity = 0)
-            : this.currentIndex++;
-
-          sliderArray[this.currentIndex].style.opacity = 1;
-        }
-
-        if (this.backgroundSetInitially) this.backgroundSetInitially = false;
-
+      if (this.currentIndex >= sliderCount - 1) {
+        this.currentIndex = 0;
+      } else {
         this.currentIndex++;
       }
     },
-    intiallySetBackground(sliderArray) {
-      sliderArray[this.currentIndex].style.opacity = 1;
+    animateHeadline() {
+      const el = this.$refs.headline;
+      if (!el || !this.content.headline) return;
+      el.innerHTML = this.content.headline
+        .split(' ')
+        .map((word) => {
+          const chars = word
+            .split('')
+            .map((char) => `<span style="display:inline-block">${char}</span>`)
+            .join('');
+          return `<span style="display:inline-block;white-space:nowrap">${chars}</span>`;
+        })
+        .join('<span style="display:inline-block;white-space:pre"> </span>');
+      gsap.from(el.querySelectorAll('span > span'), {
+        opacity: 0,
+        y: 24,
+        rotateX: -80,
+        transformOrigin: '50% 100%',
+        stagger: 0.045,
+        duration: 0.65,
+        ease: 'back.out(1.4)',
+        delay: 0.4,
+      });
+    },
+    initBackground() {
       this.backgroundSetInitially = true;
     },
+    updateWidth() {
+      this.clientWidth = document.body.clientWidth;
+    },
+  },
+  mounted() {
+    window.addEventListener('resize', this.updateWidth);
+    this.animateHeadline();
+    if (this.currentContent && this.currentContent.length > 1) {
+      this.initBackground();
+      this.handleIntervalSlider = setInterval(this.autoSlide, 6000);
+    }
+  },
+  unmounted() {
+    window.removeEventListener('resize', this.updateWidth);
+    clearInterval(this.handleIntervalSlider);
   },
 };
 </script>
@@ -101,11 +155,18 @@ export default {
 <style lang="scss">
 @import '@/assets/main.scss';
 
+.hero-video {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
 .hero-image {
   position: absolute;
-  width: 100%;
   height: 100%;
-  left: 0;
+  width: 100%;
+  left: 50%;
+  transform: translateX(-50%);
   top: 0;
   user-select: none;
 
@@ -132,9 +193,12 @@ export default {
   &-container {
     position: relative;
     height: calc(100vh - 96px);
-    margin-bottom: 32px;
     width: 100%;
     transform: translateY(94px);
+
+    &--video {
+      overflow: hidden;
+    }
   }
 
   &-content {
@@ -151,5 +215,9 @@ export default {
     transform: translate(-50%, -50%);
     z-index: 1;
   }
+}
+
+.hero-slider {
+  transition: all 0.3s ease;
 }
 </style>

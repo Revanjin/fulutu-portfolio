@@ -8,14 +8,18 @@
       :href="item.fields.url"
       :key="item.sys.id"
     >
-      <img :src="item.fields.image.fields.file.url" :alt="item.title" />
+      <img
+        @contextmenu.prevent
+        :src="item.fields.image.fields.file.url"
+        :alt="item.title"
+      />
     </a>
 
     <div class="bubble bubble-open" ref="open-bubble" @click="openBubbles">
       <div class="talk-bubble">
-        <div class="talktext">Click me.</div>
+        <div class="talktext">Socials</div>
       </div>
-      <img src="../assets/favicon.png" alt="favicon" />
+      <img @contextmenu.prevent src="../assets/favicon.png" alt="favicon" />
     </div>
     <div
       class="bubble bubble-close"
@@ -48,41 +52,43 @@ export default {
       this.data = this.getSocialMedia;
     },
     openBubbles() {
-      if (this.data.length > 0) {
-        const openButton = this.$refs['open-bubble'];
-        openButton.style.display = 'none';
-
-        const closeButton = this.$refs['close-bubble'];
-        closeButton.style.display = 'block';
-
-        const bubbleItems = this.$refs['bubble-item'];
-
-        bubbleItems.forEach((item, index) => {
-          item.style.marginBottom = `${50 + index * 55}px`;
-          item.style.opacity = 1;
-        });
-      } else {
+      if (this.data.length === 0) {
         this.setSocialMediaList();
         setTimeout(this.openBubbles, 50);
+        return;
       }
+
+      const openButton = this.$refs['open-bubble'];
+      openButton.style.display = 'none';
+
+      const closeButton = this.$refs['close-bubble'];
+      closeButton.style.display = 'block';
+
+      const bubbleItems = this.$refs['bubble-item'];
+
+      bubbleItems?.forEach((item, index) => {
+        item.style.marginBottom = `${50 + index * 55}px`;
+        item.style.opacity = 1;
+      });
     },
     closeBubbles() {
-      if (this.data.length > 0) {
-        const openButton = this.$refs['open-bubble'];
-        openButton.style.display = 'block';
-
-        const closeButton = this.$refs['close-bubble'];
-        closeButton.style.display = 'none';
-
-        const bubbleItems = this.$refs['bubble-item'];
-
-        bubbleItems.forEach((item) => {
-          item.style.marginBottom = 0;
-          item.style.opacity = 0;
-        });
-      } else {
+      if (this.data.length === 0) {
         this.setSocialMediaList();
+        return;
       }
+
+      const openButton = this.$refs['open-bubble'];
+      openButton.style.display = 'block';
+
+      const closeButton = this.$refs['close-bubble'];
+      closeButton.style.display = 'none';
+
+      const bubbleItems = this.$refs['bubble-item'];
+
+      bubbleItems?.forEach((item) => {
+        item.style.marginBottom = 0;
+        item.style.opacity = 0;
+      });
     },
   },
 };
@@ -96,7 +102,7 @@ export default {
   width: 40px;
   height: 40px;
   right: 20px;
-  bottom: 5px;
+  bottom: 16px;
   cursor: pointer;
   transition: all 0.4s ease;
   z-index: 12;

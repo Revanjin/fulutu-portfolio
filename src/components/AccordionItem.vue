@@ -1,5 +1,5 @@
 <template>
-  <div className="accordion__container">
+  <div class="accordion__container">
     <div class="accordion__headline" @click="toggleContainer">
       {{ content.headline }}
       <div class="accordion__toggle" />

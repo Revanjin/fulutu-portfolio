@@ -1,5 +1,12 @@
 <template>
-  <RichTextRenderer :document="content" />
+  <div
+    :class="{
+      'text-right': alignment === 'Right',
+      'text-center': alignment === 'Center',
+    }"
+  >
+    <RichTextRenderer :document="content" />
+  </div>
 </template>
 
 <script>
@@ -9,7 +16,7 @@ export default {
   name: 'RichText',
   props: {
     content: [Array, Object],
-    shifted: Boolean,
+    alignment: String,
   },
   components: {
     RichTextRenderer,
@@ -19,6 +26,13 @@ export default {
 
 <style lang="scss">
 @import '@/assets/main.scss';
+
+.text-right {
+  text-align: right;
+}
+.text-center {
+  text-align: center;
+}
 
 ul {
   display: flex;
