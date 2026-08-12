@@ -3,6 +3,7 @@
     <ComponentLoader
       style="background: #eeeeee"
       :components="getSpecificPage?.reference"
+      :page-width="getSpecificPage?.width"
       :shifted="getSpecificPage?.shiftContent"
       :shiftedHeight="shiftedHeight"
     />

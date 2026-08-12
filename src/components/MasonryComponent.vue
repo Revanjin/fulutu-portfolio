@@ -1,8 +1,8 @@
 <template>
-  <div class="masonry-wall">
+  <div ref="masonryRoot" class="masonry-wall">
     <MasonryWall
       :items="media"
-      :ssr-columns="1"
+      :ssr-columns="effectiveColumns"
       :column-width="columnWidth"
       :gap="8"
     >
@@ -83,15 +83,39 @@ export default {
       lightboxIndex: null,
       lightboxLoading: false,
       loadedItems: {},
+      containerWidth: 0,
     };
   },
   computed: {
     isMobile() {
       return window.innerWidth < 576;
     },
+    configuredColumns() {
+      const parsed = Number.parseInt(this.content?.columns, 10);
+      return [1, 2, 3].includes(parsed) ? parsed : 3;
+    },
+    effectiveColumns() {
+      if (this.isMobile) {
+        return 1;
+      }
+
+      return this.configuredColumns;
+    },
     columnWidth() {
       if (this.isMini) return 140;
-      return this.isMobile ? 250 : 320;
+
+      const fallback = this.isMobile ? 250 : 320;
+      if (!this.containerWidth) {
+        return fallback;
+      }
+
+      const gap = 8;
+      const totalGap = gap * (this.effectiveColumns - 1);
+      const computedWidth = Math.floor(
+        (this.containerWidth - totalGap) / this.effectiveColumns,
+      );
+
+      return Math.max(170, computedWidth);
     },
     media() {
       return this.isMobile && this.content?.mobileMedia
@@ -129,11 +153,18 @@ export default {
       if (e.key === 'ArrowLeft') this.prevImage();
       if (e.key === 'Escape') this.closeLightbox();
     },
+    updateContainerWidth() {
+      const width = this.$refs.masonryRoot?.clientWidth ?? 0;
+      this.containerWidth = width;
+    },
   },
   mounted() {
+    this.$nextTick(() => this.updateContainerWidth());
+    window.addEventListener('resize', this.updateContainerWidth);
     window.addEventListener('keydown', this.onKeydown);
   },
   unmounted() {
+    window.removeEventListener('resize', this.updateContainerWidth);
     window.removeEventListener('keydown', this.onKeydown);
   },
 };

@@ -14,7 +14,15 @@
       v-if="!componentIsBackgroundOnly"
       :class="['content', { hasHero: hasHeroImageComponent }]"
     >
-      <div :class="['content-inner', { shifted: shifted }]">
+      <div
+        :class="[
+          'content-inner',
+          {
+            shifted: shifted,
+            'content-inner--xl': normalizedPageWidth === 'XL',
+          },
+        ]"
+      >
         <div
           v-for="component in components"
           :key="component.sys.contentType.sys.id"
@@ -131,6 +139,10 @@ export default {
       type: String,
       default: '',
     },
+    pageWidth: {
+      type: String,
+      default: 'L',
+    },
     test: {
       type: Boolean,
       default: false,
@@ -176,6 +188,10 @@ export default {
     },
   },
   computed: {
+    normalizedPageWidth() {
+      const width = (this.pageWidth ?? 'L').toString().toUpperCase();
+      return width === 'XL' ? 'XL' : 'L';
+    },
     hasHeroImageComponent() {
       return this.components.some(
         (component) => component.sys.contentType.sys.id === 'heroImage',
@@ -222,6 +238,10 @@ export default {
     @media (min-width: $lg) {
       padding: 48px 64px 32px;
       width: calc($lg - 64px * 2.5);
+
+      &--xl {
+        width: min(calc(100% - 96px), 1280px);
+      }
     }
   }
 
