@@ -5,7 +5,8 @@
       class="bubble bubble-item"
       ref="bubble-item"
       target="_blank"
-      :href="item.fields.url"
+      rel="noopener noreferrer"
+      :href="safeUrl(item.fields.url)"
       :key="item.sys.id"
     >
       <img
@@ -48,6 +49,10 @@ export default {
     ...mapGetters(['getSocialMedia']),
   },
   methods: {
+    safeUrl(url) {
+      // URLs come from the CMS; block javascript: and similar schemes
+      return /^(https?:|mailto:)/i.test(url?.trim() ?? '') ? url : undefined;
+    },
     setSocialMediaList() {
       this.data = this.getSocialMedia;
     },

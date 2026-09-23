@@ -34,8 +34,8 @@
       "
     ></div>
     <div class="im-text">
-      <div class="im-headline" v-html="content.title"></div>
-      <div class="im-subheadline" v-html="content.subtitle"></div>
+      <div class="im-headline">{{ content.title }}</div>
+      <div class="im-subheadline">{{ content.subtitle }}</div>
     </div>
   </div>
 </template>

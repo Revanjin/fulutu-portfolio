@@ -299,14 +299,14 @@ export default {
   background: $fulutu-white;
   width: 100%;
   box-sizing: border-box;
-  padding: 16px 24px;
+  padding: 12px 14px;
   z-index: 11;
 
   &__inner {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 18px;
+    gap: 10px;
     min-width: 0;
     flex-wrap: wrap;
   }
@@ -323,7 +323,7 @@ export default {
 
   .footer-navigation-container {
     display: flex;
-    gap: 16px;
+    gap: 10px;
     flex-wrap: wrap;
     flex: 1 1 auto;
     min-width: 0;
@@ -336,6 +336,7 @@ export default {
     position: relative;
     flex: 0 0 auto;
     overflow: visible;
+    margin-left: auto;
 
     &__important,
     &__panel {
@@ -352,7 +353,9 @@ export default {
       background: $fulutu-white;
       border: 1px solid rgba($fulutu-black, 0.1);
       box-shadow: 0px 10px 24px -16px rgba($fulutu-black, 0.75);
-      border-radius: 999px;
+      max-width: calc(100vw - 30px);
+      flex-wrap: wrap;
+      border-radius: 18px;
       padding: 8px;
       z-index: 20;
     }
@@ -403,7 +406,7 @@ export default {
       color: $fulutu-black;
       cursor: pointer;
       font-family: inherit;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       letter-spacing: 0.02em;
       white-space: nowrap;
       padding: 0 12px;
@@ -445,33 +448,26 @@ export default {
     }
   }
 
-  @media (max-width: 760px) {
-    padding: 12px 14px;
-    width: 100%;
+  @media (min-width: $md) {
+    padding: 16px 24px;
 
     &__inner {
-      gap: 10px;
-      align-items: flex-start;
-      flex-direction: column;
+      gap: 18px;
     }
 
     .footer-navigation-container {
-      gap: 10px;
+      gap: 16px;
     }
 
     .footer-socials {
-      align-self: flex-end;
-      margin-top: 2px;
-
       &__toggle {
-        font-size: 0.9rem;
+        font-size: 0.95rem;
       }
 
       &__panel {
-        right: 0;
-        max-width: calc(100vw - 30px);
-        flex-wrap: wrap;
-        border-radius: 18px;
+        max-width: none;
+        flex-wrap: nowrap;
+        border-radius: 999px;
       }
     }
   }

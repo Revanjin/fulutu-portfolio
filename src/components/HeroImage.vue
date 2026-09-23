@@ -109,16 +109,26 @@ export default {
     animateHeadline() {
       const el = this.$refs.headline;
       if (!el || !this.content.headline) return;
-      el.innerHTML = this.content.headline
-        .split(' ')
-        .map((word) => {
-          const chars = word
-            .split('')
-            .map((char) => `<span style="display:inline-block">${char}</span>`)
-            .join('');
-          return `<span style="display:inline-block;white-space:nowrap">${chars}</span>`;
-        })
-        .join('<span style="display:inline-block;white-space:pre"> </span>');
+      const span = (text, className) => {
+        const node = document.createElement('span');
+        node.className = className;
+        node.textContent = text;
+        return node;
+      };
+      const nodes = [];
+      this.content.headline.split(' ').forEach((word, index) => {
+        if (index > 0) {
+          nodes.push(span(' ', 'hero-image-content__space'));
+        }
+        const wordNode = span('', 'hero-image-content__word');
+        word
+          .split('')
+          .forEach((char) =>
+            wordNode.append(span(char, 'hero-image-content__char')),
+          );
+        nodes.push(wordNode);
+      });
+      el.replaceChildren(...nodes);
       gsap.from(el.querySelectorAll('span > span'), {
         opacity: 0,
         y: 24,
@@ -214,6 +224,20 @@ export default {
     padding: 16px 8px;
     transform: translate(-50%, -50%);
     z-index: 1;
+
+    &__word,
+    &__char,
+    &__space {
+      display: inline-block;
+    }
+
+    &__word {
+      white-space: nowrap;
+    }
+
+    &__space {
+      white-space: pre;
+    }
   }
 }
 
