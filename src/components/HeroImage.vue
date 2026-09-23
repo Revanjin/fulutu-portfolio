@@ -30,10 +30,13 @@
           class="hero-video"
           :src="currentContent[0]?.fields?.file?.url"
           :type="mediaContentType"
-          autoplay
+          :poster="videoPosterUrl"
+          :autoplay="!prefersReducedMotion"
+          preload="metadata"
           loop
           muted
-          @load="mediaIsLoaded"
+          playsinline
+          @loadeddata="mediaIsLoaded"
         ></video>
       </div>
       <div v-else :class="['hero-image', { shifted: shifted }]">
@@ -83,6 +86,13 @@ export default {
     },
     isMobile() {
       return window.innerWidth < 576 && !!this.content.mediaMobile;
+    },
+    videoPosterUrl() {
+      const url = this.content.videoPoster?.fields?.file?.url;
+      return url ? `${url}?fm=webp&w=1920&q=75` : undefined;
+    },
+    prefersReducedMotion() {
+      return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     },
     setContainerHeight() {
       return `${document.body.offsetHeight - 66}px`;
