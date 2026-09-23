@@ -1,6 +1,8 @@
 <template>
   <div ref="masonryRoot" class="masonry-wall">
+    <!-- columnWidth depends on containerWidth; changing it mid-layout makes masonry-wall duplicate items -->
     <MasonryWall
+      v-if="containerWidth"
       :items="media"
       :ssr-columns="effectiveColumns"
       :column-width="columnWidth"
@@ -10,14 +12,21 @@
         <div
           v-if="item?.fields?.file?.url"
           class="masonry-card flex items-center justify-center"
+          :ref="(el) => registerCardRef(el, index)"
+          :style="getCardStyle(item)"
           :class="{ 'masonry-card--loading': !loadedItems[index] }"
         >
           <img
+            v-if="visibleItems[index]"
             :src="item?.fields?.file?.url"
+            loading="lazy"
+            decoding="async"
+            fetchpriority="low"
             @load="markLoaded(index)"
             @error="markLoaded(index)"
             @click="openLightbox(index)"
           />
+          <div v-else class="masonry-card__placeholder" aria-hidden="true" />
         </div>
       </template>
     </MasonryWall>
@@ -83,7 +92,9 @@ export default {
       lightboxIndex: null,
       lightboxLoading: false,
       loadedItems: {},
+      visibleItems: {},
       containerWidth: 0,
+      cardObserver: null,
     };
   },
   computed: {
@@ -130,6 +141,62 @@ export default {
     markLoaded(index) {
       this.loadedItems = { ...this.loadedItems, [index]: true };
     },
+    registerCardRef(el, index) {
+      if (!el) {
+        return;
+      }
+
+      if (!('IntersectionObserver' in window)) {
+        this.visibleItems = { ...this.visibleItems, [index]: true };
+        return;
+      }
+
+      if (!this.cardObserver) {
+        this.cardObserver = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (!entry.isIntersecting) {
+                return;
+              }
+
+              const targetIndex = Number.parseInt(
+                entry.target.dataset.lazyIndex,
+                10,
+              );
+              if (Number.isNaN(targetIndex)) {
+                return;
+              }
+
+              this.visibleItems = {
+                ...this.visibleItems,
+                [targetIndex]: true,
+              };
+              this.cardObserver?.unobserve(entry.target);
+            });
+          },
+          {
+            root: null,
+            rootMargin: '120px 0px',
+            threshold: 0.01,
+          },
+        );
+      }
+
+      el.dataset.lazyIndex = `${index}`;
+      this.cardObserver.observe(el);
+    },
+    getCardStyle(item) {
+      const width = item?.fields?.file?.details?.image?.width;
+      const height = item?.fields?.file?.details?.image?.height;
+
+      if (!width || !height) {
+        return { minHeight: '180px' };
+      }
+
+      return {
+        aspectRatio: `${width} / ${height}`,
+      };
+    },
     openLightbox(index) {
       this.lightboxLoading = true;
       this.lightboxIndex = index;
@@ -159,11 +226,13 @@ export default {
     },
   },
   mounted() {
+    this.visibleItems = {};
     this.$nextTick(() => this.updateContainerWidth());
     window.addEventListener('resize', this.updateContainerWidth);
     window.addEventListener('keydown', this.onKeydown);
   },
   unmounted() {
+    this.cardObserver?.disconnect();
     window.removeEventListener('resize', this.updateContainerWidth);
     window.removeEventListener('keydown', this.onKeydown);
   },
@@ -186,12 +255,22 @@ export default {
     overflow: hidden;
     border-radius: 5px;
     @include skeleton-shimmer;
+    width: 100%;
+    position: relative;
 
     img {
       animation: appear 0.5s ease-in;
       border-radius: 5px;
       width: 100%;
+      height: 100%;
+      object-fit: cover;
       transition: all 0.33s ease;
+    }
+
+    &__placeholder {
+      width: 100%;
+      height: 100%;
+      min-height: 120px;
     }
   }
 }
