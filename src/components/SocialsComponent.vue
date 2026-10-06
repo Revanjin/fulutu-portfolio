@@ -3,6 +3,7 @@
     v-if="socialLinks.length"
     class="socials"
     :class="[`socials--${variant}`, { 'socials--compact': compact }]"
+    :style="{ '--socials-bg': backgroundColor }"
   >
     <a
       v-for="link in socialLinks"
@@ -24,35 +25,40 @@
   </div>
 </template>
 
-<script>
-import { mapGetters } from 'vuex';
+<script setup>
+import { computed } from 'vue';
+import { useStore } from 'vuex';
 
-export default {
-  name: 'Socials-Component',
-  props: {
-    variant: {
-      type: String,
-      default: 'row',
-      validator: (value) => ['row', 'floating', 'inline'].includes(value),
-    },
-    compact: {
-      type: Boolean,
-      default: false,
-    },
+const props = defineProps({
+  content: Object,
+  variant: {
+    type: String,
+    default: 'row',
+    validator: (value) => ['row', 'floating', 'inline'].includes(value),
   },
-  computed: {
-    ...mapGetters(['getSocialMedia']),
-    socialLinks() {
-      return (
-        this.getSocialMedia?.[0]?.fields?.reference?.map((item) => ({
-          url: item.fields?.url,
-          image: item.fields?.image?.fields?.file?.url,
-          title: item.fields?.title ?? '',
-        })) ?? []
-      );
-    },
+  compact: {
+    type: Boolean,
+    default: false,
   },
-};
+});
+
+const store = useStore();
+
+const socialLinks = computed(() => {
+  const reference =
+    props.content?.reference ??
+    store.getters.getSocialMedia?.[0]?.fields?.reference;
+
+  return (
+    reference?.map((item) => ({
+      url: item.fields?.url,
+      image: item.fields?.image?.fields?.file?.url,
+      title: item.fields?.title ?? '',
+    })) ?? []
+  );
+});
+
+const backgroundColor = computed(() => props.content?.colorHexcode);
 </script>
 
 <style lang="scss" scoped>
@@ -64,7 +70,7 @@ export default {
   justify-content: center;
   gap: 18px;
   flex-wrap: wrap;
-  background: $fulutu-black;
+  background: var(--socials-bg, #{$fulutu-black});
 
   &--row {
     width: 100%;

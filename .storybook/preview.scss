@@ -1,0 +1,25 @@
+@use '@/assets/main' as *;
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: 'Montserrat', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  background: $fulutu-white;
+  color: $fulutu-black;
+}
+
+.sb-empty {
+  max-width: 65ch;
+  padding: $spacing-md;
+  border-left: $spacing-sm solid $fulutu-rose;
+  font-size: $font-sm;
+}
+
+.sb-outline {
+  outline: 1px dashed $fulutu-rose-grey;
+}

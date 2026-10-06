@@ -6,7 +6,9 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "deploy": "npm run build && node deploy.mjs"
+    "deploy": "npm run build && node deploy.mjs",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "dependencies": {
     "@yeger/vue-masonry-wall": "^5.0.2",
@@ -20,6 +22,7 @@
     "vuex": "^4.0.0"
   },
   "devDependencies": {
+    "@storybook/vue3-vite": "^10.6.1",
     "@vitejs/plugin-vue": "^5.0.0",
     "eslint": "^8.0.0",
     "eslint-config-prettier": "^9.0.0",
@@ -28,6 +31,7 @@
     "prettier": "^3.0.0",
     "sass": "^1.77.0",
     "ssh2-sftp-client": "^12.1.1",
+    "storybook": "^10.6.1",
     "vite": "^5.0.0"
   }
 }
